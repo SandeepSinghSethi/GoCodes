@@ -6,24 +6,26 @@ import (
 	// "math/rand"
 )
 
-func f1(ch1 chan int,ch2 chan string){
+func f1(ch1 <-chan int,ch2 <-chan string){
 	for{
 		select{
 			case val,ok := <-ch1:
 				if !ok{
+					ch1 = nil
 					fmt.Println("CH1 closed")
-					return
+				}else{
+					fmt.Println(val," <- Ch1")
 				}
-				fmt.Println(val)
-
 			case val,ok := <-ch2:
 				if !ok{
 					fmt.Println("CH2 closed")
-					return
+					ch2 = nil
+				}else{
+					fmt.Println(val, " <- Ch2")
 				}
-				fmt.Println(val)
-			default:
-				time.Sleep(time.Second + 2)
+		}
+		if ch1 == nil && ch2 == nil{
+			break
 		}
 	}
 }
@@ -77,22 +79,26 @@ func main(){
 
 
  	go func(){
+ 		for i:=0;i<8;i++{	
+ 				num <-i
+ 		}
+ 		time.Sleep(time.Millisecond + 500)
+ 		close(num)
+ 	}()
+
+ 	go func(){
  		for i:=0;i<10;i++{
-			num<-i	
- 			if(i >= 8){
-				num <- i
-				close(num)
-			} 		
 			str <- string(48+i)
  		}
+ 		time.Sleep(time.Millisecond + 500)
  		close(str)
  	}()
 
- 	time.Sleep(time.Second + 3)
+ 	time.Sleep(time.Second)
  	f1(num,str)
  	fmt.Println("hello")
 
 
 
 
-}
+}	
