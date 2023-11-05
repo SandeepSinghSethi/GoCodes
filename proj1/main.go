@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"log"
+	// "fmt"
 	"net/http"
 	"github.com/joho/godotenv"
 	"github.com/go-chi/chi/v5"
@@ -10,17 +11,30 @@ import (
 	// "github.com/go-chi/jsonp"
 	// "github.com/go-chi/render"
 	"github.com/go-chi/cors"
+	"database/sql"
+	 _ "github.com/go-sql-driver/mysql"
+	 "github.com/SandeepSinghSethi/mygoproj/internal/database"
+
 )
 
 // type supername struct{
 // 	Name string `json:"name"`
 // }
 
+type apiConfig struct{
+	DB *database.Queries
+}
+
 func main(){
 	godotenv.Load(".env")
 	portstring := os.Getenv("PORT")
 	if portstring == "" {
 		log.Fatal("PORT is not the found in the env file")
+	}
+
+	dbURL := os.Getenv("DB_URL")
+	if dbURL == "" {
+		log.Fatal("dbstring is not the found in the env file")	
 	}
 
 	r := chi.NewRouter()
@@ -54,14 +68,46 @@ func main(){
 	v1router.Get("/books/{author}/page/{page}",handlerBook)
 	r.Mount("/v1",v1router)
 
-
 	srv := &http.Server{
 		Handler : r,
 		Addr : ":"+portstring,
 	}
+
+	db , err := sql.Open("mysql",dbURL)
+	if err != nil {
+        log.Fatal(err.Error())
+    }
+    defer db.Close()
+
+	if err = db.Ping(); err != nil{
+        log.Fatal(err.Error())
+    }
+
+    apiCfg := apiConfig{DB: database.New(db),}
+
+
+    dbrouter := chi.NewRouter()
+	dbrouter.Post("/users",apiCfg.handlerCreateUser)
+	dbrouter.Get("/latest",apiCfg.handlerGetLatestEntry)
+	dbrouter.Get("/id/{id}",apiCfg.handlerGetLatestEntry)
+	r.Mount("/db",dbrouter)
+
+    // rows , err := db.Query("show databases")
+    // if err != nil{
+    // 	log.Fatal(err)
+    // }
+    // defer rows.Close()
+
+    // tablename := ""
+    // for rows.Next() {
+    // 	if err := rows.Scan(&tablename) ; err != nil{
+    // 		log.Fatal(err)
+    // 	}
+    // 	fmt.Println(tablename)
+    // }
+
 	log.Println("Listening on PORT :"+portstring)
-	err := srv.ListenAndServe()
-	if err != nil{
+	if err := srv.ListenAndServe(); err != nil{
 		log.Fatal(err)
 	}
 }
