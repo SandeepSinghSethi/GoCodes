@@ -18,6 +18,5 @@ func (apiCfg *apiConfig)handlerGetEntryById(w http.ResponseWriter,r *http.Reques
 		respondWithError(w,400,fmt.Sprintf("User doesn't exists : %v",err))
 		return
 	}
-
 	respondWithJSON(w,200,dbuserToUser(user))
 }

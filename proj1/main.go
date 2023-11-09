@@ -89,7 +89,7 @@ func main(){
     dbrouter := chi.NewRouter()
 	dbrouter.Post("/users",apiCfg.handlerCreateUser)
 	dbrouter.Get("/latest",apiCfg.handlerGetLatestEntry)
-	dbrouter.Get("/id/{id}",apiCfg.handlerGetLatestEntry)
+	dbrouter.Get("/id/{id}",apiCfg.handlerGetEntryById)
 	r.Mount("/db",dbrouter)
 
     // rows , err := db.Query("show databases")
