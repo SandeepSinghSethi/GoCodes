@@ -1,10 +1,10 @@
 -- +goose Up
 
 CREATE TABLE users (
-	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	id UUID PRIMARY KEY,
 	created_at TIMESTAMP NOT NULL,
 	modified_at TIMESTAMP NOT NULL,
-	name TEXT NOT NULL
+	username VARCHAR(64) UNIQUE NOT NULL
 );
 
 -- +goose Down

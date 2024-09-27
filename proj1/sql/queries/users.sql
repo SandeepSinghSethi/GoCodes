@@ -1,9 +1,11 @@
--- name: CreateUser :execresult
-INSERT INTO users (created_at, modified_at , name)
-VALUES (?,?,?);
+-- name: CreateUser :one
+INSERT INTO users (id,created_at, modified_at , username , api_key)
+VALUES ($1,$2,$3,$4,
+    encode(sha256(random()::text::bytea),'hex'))
+RETURNING *;
 
--- name: GetLatestEntry :one
-SELECT * FROM users WHERE id = LAST_INSERT_ID();
+-- name: GetUserByAPI :one
+SELECT * FROM users WHERE api_key = $1;
 
--- name: GetEntryFromId :one
-SELECT * FROM users WHERE id = ?;
+-- name: GetAllusers :many
+SELECT username,api_key FROM users;
